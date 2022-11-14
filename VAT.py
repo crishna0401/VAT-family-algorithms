@@ -1,6 +1,15 @@
 import numpy as np
 
 def VAT(R):
+    """
+    input: 
+    R (n*n double): Dissimilarity data input
+    outputs: 
+    RV (n*n double): VAT-reordered dissimilarity data
+    C (n int): Connection indexes of MST
+    I (n int): Reordered indexes of R, the input data
+    cut (n double): MST link cut magnitude
+    """
     N, M = R.shape
     K = np.arange(N)
     J = K
@@ -23,7 +32,6 @@ def VAT(R):
         i = np.zeros(len(J))
         for k in range(len(J)):
             y[k], i[k] = np.min(R[I, J[k]]), np.argmin(R[I, J[k]])
-
 
         y, j = np.min(y), np.argmin(y)
         I = np.append(I, J[j])
