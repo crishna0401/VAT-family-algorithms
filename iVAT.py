@@ -38,7 +38,7 @@ def iVAT(R, VATflag=False):
     return RiV, RV, reordering_mat
 
 
-def iVAT(R, VATflag=False):
+def optimized_iVAT(R, VATflag=False):
     """
     This function reorders dissimilarity data using iVAT algorithm
     
