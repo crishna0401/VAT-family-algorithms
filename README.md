@@ -1,2 +1,2 @@
 # VAT-family-algorithms
-This repository consists of python versions of the VAT-family.
+This repository consists of python versions of the VAT-family-algorithms.
