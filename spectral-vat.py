@@ -2,8 +2,6 @@ import numpy as np
 from visualclustering.VAT import VAT
 from visualclustering.iVAT import iVAT
 import networkx as nx
-import matplotlib.pyplot as plt
-
 
 class specvat():
     def __init__(self, data, k):
