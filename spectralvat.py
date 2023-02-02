@@ -2,6 +2,7 @@ import numpy as np
 from visualclustering.VAT import VAT
 from visualclustering.iVAT import iVAT
 from sklearn.metrics.pairwise import euclidean_distances
+import random
 
 class specvat():
     def __init__(self, data, k, cp, ns):
@@ -9,9 +10,11 @@ class specvat():
         self.k = k
         self.cp = cp
         self.ns = ns
+        self.smp = None
+        self.rp = None
+        self.m = None
         self.rs = self.dissimilarity()
  
-
     def vat(self):
         res = VAT(self.rs)
         return res
@@ -43,8 +46,9 @@ class specvat():
             s = np.where(i==t)[0]
             nt = (np.ceil(ns*len(s)/n)).astype('int')
             # randomly sample nt points from s
-            ind = np.random.choice(s, size=nt, replace=False)
-            smp.append(s[ind])
+            ind = random.sample(range(len(s)), nt,)
+            # smp.append(s[ind])
+            smp.append(ind)
         smp = [item for sublist in smp for item in sublist]
         smp = list(set(smp))
         return smp, rp, m
@@ -72,6 +76,9 @@ class specvat():
             smp, rp, m = self.MMRS(self.data, self.cp, self.ns)
             # Compute pairwise distances between the sampled data
             Similarity = euclidean_distances(self.data[smp], self.data[smp], squared=True)
+            self.smp = smp
+            self.rp = rp
+            self.m = m
         else:
             Similarity = euclidean_distances(self.data)
 
@@ -87,4 +94,6 @@ class specvat():
         eigvec_stack = eig_vecs[:, sort_indices]
         dist_matrix = np.linalg.norm(eigvec_stack[:, None] - eigvec_stack, axis=2)
         dist_matrix = dist_matrix / np.max(dist_matrix)
+
+
         return dist_matrix
