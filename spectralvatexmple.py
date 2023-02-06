@@ -36,5 +36,8 @@ cut = rv2[-1]
 I=rv2[2]
 ivat_pred = sv.compute_pred(cut,I,gt_clusters=3)
 
+###################### Compute accuracy #############################
+print(sv.compute_accuracy(vat_pred,labels))
+
 
 ########  Note: keep spectralvat.py file in the same path as this notebook ###########
