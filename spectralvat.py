@@ -1,17 +1,18 @@
 import numpy as np
 from visualclustering.VAT import VAT
 from visualclustering.iVAT import iVAT
-from sklearn.metrics.pairwise import euclidean_distances
+from sklearn.metrics.pairwise import euclidean_distances, cosine_distances
 import random
 import statistics as stats
 
 class specvat():
-    def __init__(self, data, k, cp, ns):
+    def __init__(self, data, k, cp, ns,use_cosine=False):
         self.data = data
         self.n, self.p = data.shape
         self.k = k
         self.cp = cp
         self.ns = ns
+        self.use_cosine = use_cosine
         self.smp = None
         self.rp = None
         self.m = None
@@ -30,7 +31,10 @@ class specvat():
             Pi[self.smp[I[ind[k-1]:ind[k]]]] = k
 
         nsmp = np.setdiff1d(np.arange(self.n), self.smp)
-        r = euclidean_distances(self.data[self.smp], self.data[nsmp])
+        if self.use_cosine:
+            r = euclidean_distances(self.data[self.smp], self.data[nsmp])
+        else:
+            r = euclidean_distances(self.data[self.smp], self.data[nsmp])
         s = np.argmin(r, axis=0)
         Pi[nsmp] = Pi[self.smp[s]]
 
@@ -80,7 +84,10 @@ class specvat():
         n, p = x.shape
         m = np.ones(cp)
         # d = np.sqrt(np.sum((x-x[0])**2, axis=1))
-        d = np.linalg.norm(x-x[0], axis=1, ord=2) # ord=2 is for euclidean distance
+        if self.use_cosine:
+            d = cosine_distances(x[0].reshape(1, -1), x)[0]
+        else:
+            d = np.linalg.norm(x-x[0], axis=1, ord=2) # ord=2 is for euclidean distance
         Rp = np.zeros((n, cp))
         Rp[:,0] = d
         for t in range(1, cp):
@@ -127,13 +134,20 @@ class specvat():
             # Sample data and obtain cluster information
             smp, rp, m = self.MMRS(self.data, self.cp, self.ns)
             # Compute pairwise distances between the sampled data
-            Similarity = euclidean_distances(self.data[smp], self.data[smp], squared=True)
+            if self.use_cosine:
+                Similarity = cosine_distances(self.data[smp], self.data[smp])
+            else: 
+                Similarity = euclidean_distances(self.data[smp], self.data[smp], squared=True)
+
             self.smp = smp
             self.rp = rp
             self.m = m
             
         else:
-            Similarity = euclidean_distances(self.data)
+            if self.use_cosine:
+                Similarity = cosine_distances(self.data, self.data)
+            else: 
+                Similarity = euclidean_distances(self.data, self.data, squared=True)
 
         Adjacent = self.myKNN(Similarity, K=10)
         degreeMatrix = np.sum(Adjacent, axis=1)
@@ -145,8 +159,11 @@ class specvat():
         eig_values, eig_vecs = np.linalg.eig(Laplacian)
         sort_indices = np.argsort(eig_values)[:self.k]
         eigvec_stack = eig_vecs[:, sort_indices]
-        dist_matrix = np.linalg.norm(eigvec_stack[:, None] - eigvec_stack, axis=2)
+        # dist_matrix = np.linalg.norm(eigvec_stack[:, None] - eigvec_stack, axis=2)
+        if self.use_cosine:
+            dist_matrix = cosine_distances(eigvec_stack, eigvec_stack)
+        else:
+            dist_matrix = euclidean_distances(eigvec_stack, eigvec_stack, squared=True)
         dist_matrix = dist_matrix / np.max(dist_matrix)
-
 
         return dist_matrix
