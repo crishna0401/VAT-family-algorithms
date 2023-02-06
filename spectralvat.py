@@ -47,8 +47,7 @@ class specvat():
             nt = (np.ceil(ns*len(s)/n)).astype('int')
             # randomly sample nt points from s
             ind = random.sample(range(len(s)), nt,)
-            # smp.append(s[ind])
-            smp.append(ind)
+            smp.append(s[ind])
         smp = [item for sublist in smp for item in sublist]
         smp = list(set(smp))
         return smp, rp, m
