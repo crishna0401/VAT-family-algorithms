@@ -3,10 +3,12 @@ from visualclustering.VAT import VAT
 from visualclustering.iVAT import iVAT
 from sklearn.metrics.pairwise import euclidean_distances
 import random
+import statistics as stats
 
 class specvat():
     def __init__(self, data, k, cp, ns):
         self.data = data
+        self.n, self.p = data.shape
         self.k = k
         self.cp = cp
         self.ns = ns
@@ -14,6 +16,57 @@ class specvat():
         self.rp = None
         self.m = None
         self.rs = self.dissimilarity()
+
+    def compute_pred(self,cut,I,gt_clusters=None):
+        self.clusters = gt_clusters
+        self.smp = np.array(self.smp)
+        ind = np.argsort(cut)[::-1]
+        ind = np.sort(ind[:self.clusters-1])
+
+        Pi = np.zeros(self.n)
+        Pi[self.smp[I[:ind[0]]]] = 0
+        Pi[self.smp[I[ind[-1]:]]] = self.clusters-1
+        for k in range(1, self.clusters-1):
+            Pi[self.smp[I[ind[k-1]:ind[k]]]] = k
+
+        nsmp = np.setdiff1d(np.arange(self.n), self.smp)
+        r = euclidean_distances(self.data[self.smp], self.data[nsmp])
+        s = np.argmin(r, axis=0)
+        Pi[nsmp] = Pi[self.smp[s]]
+
+        return Pi
+
+
+    def ClusterRelabellingPA(self,PredictedLabel,lables):
+        samples=len(lables)
+        NoofK=len(np.unique(lables))
+        cluster_matrix_mod=np.zeros(samples)
+        length_partition=np.zeros(NoofK)
+        for i2 in range(NoofK):
+            length_partition[i2]=len(np.where(PredictedLabel==i2)[0])
+        
+        length_partition_sort = np.sort(length_partition)[::-1]
+        length_partition_sort_idx = np.argsort(length_partition)[::-1]
+        index_remaining = np.arange(NoofK)
+        
+        for i2 in range(NoofK):
+            original_idx = length_partition_sort_idx[i2]
+            partition = np.where(PredictedLabel==original_idx)[0]
+            proposed_idx = stats.mode(lables[partition])
+            if(np.sum(index_remaining==proposed_idx)!=0):
+                # proposed_idx
+                cluster_matrix_mod[PredictedLabel==original_idx]=proposed_idx
+            else:
+                # index_remaining[0]
+                cluster_matrix_mod[PredictedLabel==original_idx]=index_remaining[0]
+            index_remaining = index_remaining[index_remaining!=proposed_idx]
+        
+        PA=(samples-len(np.where((lables-(cluster_matrix_mod)!=0))[0]))/samples*100
+        return PA,cluster_matrix_mod
+
+    def compute_accuracy(self, Pi, gt):
+        return self.ClusterRelabellingPA(Pi, gt)
+
  
     def vat(self):
         res = VAT(self.rs)
@@ -78,6 +131,7 @@ class specvat():
             self.smp = smp
             self.rp = rp
             self.m = m
+            
         else:
             Similarity = euclidean_distances(self.data)
 
