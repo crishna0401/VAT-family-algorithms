@@ -12,7 +12,7 @@ plt.scatter(data[:,0], data[:,1], s=10, color='red')
 
 ############## applying specvat ################################
 k=2  # have to change this value to get multiple plots
-sv = specvat(data,k,cp=10,ns=400)
+sv = specvat(data,k,cp=10,ns=400,use_cosine=True)
 rv1 = sv.vat()
 rv2 =  sv.ivat()
 
@@ -26,6 +26,7 @@ plt.subplot(1, 2, 2)
 plt.imshow(rv2[0], cmap='gray')
 plt.title('iVAT')
 
+
 ############ Predicted labels from VAT ############################
 cut = rv1[-1]
 I=rv1[2]
@@ -36,8 +37,5 @@ cut = rv2[-1]
 I=rv2[2]
 ivat_pred = sv.compute_pred(cut,I,gt_clusters=3)
 
-###################### Compute accuracy #############################
+
 print(sv.compute_accuracy(vat_pred,labels))
-
-
-########  Note: keep spectralvat.py file in the same path as this notebook ###########
