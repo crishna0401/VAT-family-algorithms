@@ -1,20 +1,27 @@
 from spectralvat import specvat
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_blobs
+import numpy as np
 
-################### simple guassian data creation###############
-centers = [(-15, -5), (0, 0), (5, 15)]
-data, labels = make_blobs(n_samples=10000, centers=centers, shuffle=False, random_state=42)
+################### simple guassian data creation ###############
+data, labels = make_blobs(n_samples=1000, centers=3, n_features=200,random_state=4, cluster_std=1)
 
 # illustrate data
 plt.scatter(data[:,0], data[:,1], s=10, color='red')
 
-
 ############## applying specvat ################################
-k=2  # have to change this value to get multiple plots
-sv = specvat(data,k,cp=10,ns=400,use_cosine=True)
-rv1 = sv.vat()
-rv2 =  sv.ivat()
+sv = specvat(data,cp=10,ns=400,use_cosine=False)
+
+
+
+
+############# Experimenting with various 'k' ####################
+k=9
+ground_truth_clusters = len(np.unique(labels))
+
+rs = sv.dissimilarity(k)
+rv1 = sv.vat(rs)
+rv2 =  sv.ivat(rs)
 
 ############ Plotting reordered dissimilarity matrices #########
 
@@ -30,12 +37,13 @@ plt.title('iVAT')
 ############ Predicted labels from VAT ############################
 cut = rv1[-1]
 I=rv1[2]
-vat_pred = sv.compute_pred(cut,I,gt_clusters=3)
+vat_pred = sv.compute_pred(cut,I,gt_clusters=ground_truth_clusters)
 
 ############ Predicted labels from iVAT ############################
 cut = rv2[-1]
 I=rv2[2]
-ivat_pred = sv.compute_pred(cut,I,gt_clusters=3)
+ivat_pred = sv.compute_pred(cut,I,gt_clusters=ground_truth_clusters)
 
 
 print(sv.compute_accuracy(vat_pred,labels))
+print(sv.compute_accuracy(ivat_pred,labels))
