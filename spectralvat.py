@@ -156,8 +156,8 @@ class specvat():
 
         eig_values, eig_vecs = np.linalg.eig(Laplacian)
 
-        self.eig_values = eig_values
-        self.eig_vecs = eig_vecs
+        self.eig_values = eig_values.real
+        self.eig_vecs = eig_vecs.real
 
 
     def dissimilarity(self,k):
