@@ -6,17 +6,16 @@ import random
 import statistics as stats
 
 class specvat():
-    def __init__(self, data, k, cp, ns,use_cosine=False):
+    def __init__(self, data, cp, ns,use_cosine=False):
         self.data = data
         self.n, self.p = data.shape
-        self.k = k
         self.cp = cp
         self.ns = ns
         self.use_cosine = use_cosine
         self.smp = None
         self.rp = None
         self.m = None
-        self.rs = self.dissimilarity()
+        self.eigen_decomposition()
 
     def compute_pred(self,cut,I,gt_clusters=None):
         self.clusters = gt_clusters
@@ -72,12 +71,12 @@ class specvat():
         return self.ClusterRelabellingPA(Pi, gt)
 
  
-    def vat(self):
-        res = VAT(self.rs)
+    def vat(self,rs):
+        res = VAT(rs)
         return res
 
-    def ivat(self):
-        res = iVAT(self.rs)
+    def ivat(self,rs):
+        res = iVAT(rs)
         return res
 
     def MM(self,x, cp):
@@ -127,8 +126,7 @@ class specvat():
                 A[j][i] = A[i][j] # mutually
         return A
 
-
-    def dissimilarity(self):
+    def eigen_decomposition(self):
         if len(self.data) > self.ns:
             print("data size is greater than 500, so using smart sampling")
             # Sample data and obtain cluster information
@@ -142,7 +140,7 @@ class specvat():
             self.smp = smp
             self.rp = rp
             self.m = m
-            
+                
         else:
             if self.use_cosine:
                 Similarity = cosine_distances(self.data, self.data)
@@ -157,8 +155,14 @@ class specvat():
         Laplacian = np.dot(np.dot(sqrtDegreeMatrix, laplacianMatrix), sqrtDegreeMatrix)
 
         eig_values, eig_vecs = np.linalg.eig(Laplacian)
-        sort_indices = np.argsort(eig_values)[:self.k]
-        eigvec_stack = eig_vecs[:, sort_indices]
+
+        self.eig_values = eig_values
+        self.eig_vecs = eig_vecs
+
+
+    def dissimilarity(self,k):
+        sort_indices = np.argsort(self.eig_values)[:k]
+        eigvec_stack = self.eig_vecs[:, sort_indices]
         # dist_matrix = np.linalg.norm(eigvec_stack[:, None] - eigvec_stack, axis=2)
         if self.use_cosine:
             dist_matrix = cosine_distances(eigvec_stack, eigvec_stack)
