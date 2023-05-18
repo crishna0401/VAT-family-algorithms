@@ -15,5 +15,4 @@ setup(
         "Operating System :: OS Independent",
     ],
     install_requires=["numpy", "statistics","scikit-learn","random","scipy"],
-    entry_points={"console_scripts": ["cloudquicklabs1 = src.main:main"]},
 )
