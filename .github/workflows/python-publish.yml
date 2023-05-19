@@ -21,7 +21,7 @@ jobs:
                 pip install build
 
             - name: Build binary wheel and a source tarball
-              run: python D:\krishna\VAT-family-algorithms\setup.py sdist
+              run: python setup.py sdist
 
             - name: Publish distribution to Test PyPI
               uses: pypa/gh-action-pypi-publish@master
